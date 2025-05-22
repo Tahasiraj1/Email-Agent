@@ -1,10 +1,13 @@
 from agents import function_tool
-from tools.fetch_unread import list_emails, authenticate
-from tools.draft_reply import draft_reply_to_email
+from tools.fetch_unread import fetch_emails
+from tools.draft_reply import generate_reply
 from googleapiclient.discovery import build
 import base64
 from email.mime.text import MIMEText
+from services.auth import authenticate
 
+
+@function_tool
 def reply_to_email(service, email_id: str, reply_text: str) -> str:
     """Send a proper reply to an email using the original message metadata."""
 
@@ -41,8 +44,8 @@ if __name__ == '__main__':
     creds = authenticate()
     service = build('gmail', 'v1', credentials=creds)
 
-    email = list_emails()  # This should return dict with 'email_id' and 'thread_id'
-    draft = draft_reply_to_email(email)
+    email = fetch_emails()  # This should return dict with 'email_id' and 'thread_id'
+    draft = generate_reply(email)
 
     reply = reply_to_email(service, email["email_id"], draft)
     print("\nReply: ", reply)
