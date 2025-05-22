@@ -8,7 +8,7 @@ from googleapiclient.discovery import build
 from agents import function_tool
 
 # Scopes: read-only Gmail inbox
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+SCOPES = ['https://mail.google.com/']
 
 def authenticate():
     creds = None
@@ -43,29 +43,28 @@ def list_latest_emails(service, max_results=1):
     for msg in messages:
         msg_data = service.users().messages().get(userId='me', id=msg['id']).execute()
 
-        for name, value in msg_data.items():
-            if name == 'body':
-                continue
-            print(f"{name}: {value}")
-
+        email_id = msg_data.get("id", "")
+        thread_id = msg_data.get("threadId", "")
+        labels_id = msg_data.get("labelIds", [])
         headers = msg_data.get("payload", {}).get("headers", [])
+        to = next((h['value'] for h in headers if h['name'] == 'Delivered-To'), None)
         subject = next((h["value"] for h in headers if h["name"] == "Subject"), "(No Subject)")
         sender = next((h["value"] for h in headers if h["name"] == "From"), "(No Sender)")
+        snippet = msg_data.get("snippet", "").replace('\u200c', '').strip()
 
-        snippet = msg_data.get("snippet", "")
-        print(f"From: {sender}")
-        print(f"Subject: {subject}")
-        print(f"Snippet: {snippet}\n{'-'*50}")
+    return (
+        {
+            "email_id": email_id,
+            "thread_id": thread_id,
+            "labels_id": labels_id,
+            "sender": sender,
+            "to": to,
+            "subject": subject,
+            "snippet": snippet
+        }
+    )
 
-        return (
-            {
-                "sender": sender,
-                "subject": subject,
-                "snippet": snippet
-            }
-        )
-
-@function_tool
+# @function_tool
 def list_emails():
     creds = authenticate()
     service = build('gmail', 'v1', credentials=creds)

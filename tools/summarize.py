@@ -7,7 +7,7 @@ gemini_api_key = os.getenv("GEMINI_API_KEY")
 if not gemini_api_key:
     raise ValueError("GEMINI_API_KEY is not set")
 
-@function_tool
+# @function_tool
 def summarize_email(email_content: str) -> str:
     """Summarize the content of a single email."""
     genai.configure(api_key=gemini_api_key)
