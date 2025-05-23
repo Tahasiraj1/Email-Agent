@@ -11,6 +11,9 @@ from services.auth import authenticate
 def reply_to_email(service, email_id: str, reply_text: str) -> str:
     """Send a proper reply to an email using the original message metadata."""
 
+    creds = authenticate()
+    service = build('gmail', 'v1', credentials=creds)
+
     # Step 1: Get original message metadata
     original_msg = service.users().messages().get(userId='me', id=email_id, format='metadata').execute()
     headers = {h['name']: h['value'] for h in original_msg['payload']['headers']}
@@ -41,11 +44,9 @@ def reply_to_email(service, email_id: str, reply_text: str) -> str:
 
 
 if __name__ == '__main__':
-    creds = authenticate()
-    service = build('gmail', 'v1', credentials=creds)
 
-    email = fetch_emails()  # This should return dict with 'email_id' and 'thread_id'
+    email = fetch_emails()
     draft = generate_reply(email)
 
-    reply = reply_to_email(service, email["email_id"], draft)
+    reply = reply_to_email(email["email_id"], draft)
     print("\nReply: ", reply)

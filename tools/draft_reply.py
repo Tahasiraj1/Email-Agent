@@ -32,8 +32,11 @@ def generate_reply(email: str) -> str:
     return response.text
 
 
-def draft_email(service, email_id: str, draft_text: str) -> str:
+def draft_email(email_id: str, draft_text: str) -> str:
     """Draft an email."""
+
+    creds = authenticate()
+    service = build('gmail', 'v1', credentials=creds)
 
     email = service.users().messages().get(userId='me', id=email_id, format='metadata').execute()
     headers = {h['name']: h['value'] for h in email['payload']['headers']}
@@ -69,9 +72,11 @@ def draft_email(service, email_id: str, draft_text: str) -> str:
 
 
 if __name__ == '__main__':
-    creds = authenticate()
-    service = build('gmail', 'v1', credentials=creds)
-    email = fetch_emails()
-    reply = generate_reply(email)
-    draft = draft_email(service, email["email_id"], reply)
-    print("\nDraft: ", draft)
+    emails = fetch_emails()
+    print(emails)
+
+    reply = generate_reply(emails)
+    print("\nReply: ", reply)
+    # draft = draft_email(emails["email_id"], reply)
+    # print("\nDraft: ", draft)
+

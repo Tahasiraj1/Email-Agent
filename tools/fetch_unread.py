@@ -1,5 +1,3 @@
-import os.path
-import json
 from services.auth import authenticate
 from googleapiclient.discovery import build
 
@@ -34,7 +32,11 @@ def extract_email_body(msg_payload: dict) -> str:
 
     return "[Could not extract body]"
 
-def list_latest_emails(service, max_results=1):
+def list_latest_emails(max_results=1):
+
+    creds = authenticate()
+    service = build('gmail', 'v1', credentials=creds)
+
     results = service.users().messages().list(userId='me', maxResults=max_results).execute()
     messages = results.get('messages', [])
 
@@ -70,15 +72,13 @@ def list_latest_emails(service, max_results=1):
                 "body": body
         }
 
-        emails_list.append(json.dumps(email_data, indent=4))
+        emails_list.append(email_data)
 
     return emails_list
 
 # @function_tool
 def fetch_emails():
-    creds = authenticate()
-    service = build('gmail', 'v1', credentials=creds)
-    emails = list_latest_emails(service)
+    emails = list_latest_emails()
     return emails
 
 
