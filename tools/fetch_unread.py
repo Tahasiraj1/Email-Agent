@@ -1,10 +1,12 @@
 from services.auth import authenticate
 from googleapiclient.discovery import build
-
-from agents import function_tool
-
+import google.generativeai as genai
 import base64
-from bs4 import BeautifulSoup  # Optional but recommended
+import os
+
+gemini_api_key = os.getenv("GEMINI_API_KEY")
+if not gemini_api_key:
+    raise ValueError("GEMINI_API_KEY is not set")
 
 def extract_email_body(msg_payload: dict) -> str:
     """Extract full email body text from Gmail message payload."""
@@ -20,16 +22,11 @@ def extract_email_body(msg_payload: dict) -> str:
     parts = msg_payload.get("parts", [])
     for part in parts:
         mime_type = part.get("mimeType", "")
-        if mime_type == "text/plain" and "data" in part.get("body", {}):
-            return decode_base64(part["body"]["data"])
+        if mime_type == ("text/plain") and "data" in part.get("body", {}):
+            return decode_base64(part["body"]["data"]).replace('\r\n', ' ').strip()
         elif mime_type == "text/html" and "data" in part.get("body", {}):
-            html = decode_base64(part["body"]["data"])
+            return decode_base64(part["body"]["data"]).replace('\r\n', ' ').strip()
             
-            soup = BeautifulSoup(html, 'html.parser')
-            plain_text = soup.get_text(separator=' ', strip=True)
-
-            return plain_text
-
     return "[Could not extract body]"
 
 def list_latest_emails(max_results=1):
@@ -52,13 +49,14 @@ def list_latest_emails(max_results=1):
         email_id = msg_data.get("id", "")
         thread_id = msg_data.get("threadId", "")
         labels_id = msg_data.get("labelIds", [])
-        headers = msg_data.get("payload", {}).get("headers", [])
-        to = next((h['value'] for h in headers if h['name'] == 'Delivered-To'), None)
+        payload = msg_data.get("payload", {})
+        headers = payload.get("headers", [])
+        
         timestamp = msg_data.get("internalDate", "")
         subject = next((h["value"] for h in headers if h["name"] == "Subject"), "(No Subject)")
         sender = next((h["value"] for h in headers if h["name"] == "From"), "(No Sender)")
+        to = next((h['value'] for h in headers if h['name'] == 'Delivered-To'), None)
         # snippet = msg_data.get("snippet", "").replace('\u200c', '').replace('\u034f', '').replace('\u200f', '').replace('\xa0', '').replace('\ufeff', '').strip()
-        payload = msg_data['payload']
         body = extract_email_body(payload)
 
         email_data = {
@@ -72,11 +70,33 @@ def list_latest_emails(max_results=1):
                 "body": body
         }
 
+
+        # Generate email category
+        genai.configure(api_key=gemini_api_key)
+        model = genai.GenerativeModel("gemini-2.0-flash")
+
+        prompt = f"""
+        DO NOT provide explanations or additional information.
+        JUST return the category name, from the following categories:
+
+        - Urgent (immediately respond)
+        - Important (requires attention)
+        - Draft (draft email)
+        - Spam (Ignore)
+
+        Categorize the following emails or email:
+        {email_data}
+        """
+
+        response = model.generate_content(prompt)
+        print(response.text)
+        email_data["category"] = response.text
+
         emails_list.append(email_data)
 
     return emails_list
 
-# @function_tool
+
 def fetch_emails():
     emails = list_latest_emails()
     return emails
