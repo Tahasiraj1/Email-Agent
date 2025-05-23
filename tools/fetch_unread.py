@@ -1,8 +1,11 @@
 from services.auth import authenticate
 from googleapiclient.discovery import build
 import google.generativeai as genai
+from agents import function_tool
 import base64
 import os
+from typing import List
+from models.interfaces import Email
 
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 if not gemini_api_key:
@@ -56,7 +59,7 @@ def list_latest_emails(max_results=1):
         subject = next((h["value"] for h in headers if h["name"] == "Subject"), "(No Subject)")
         sender = next((h["value"] for h in headers if h["name"] == "From"), "(No Sender)")
         to = next((h['value'] for h in headers if h['name'] == 'Delivered-To'), None)
-        # snippet = msg_data.get("snippet", "").replace('\u200c', '').replace('\u034f', '').replace('\u200f', '').replace('\xa0', '').replace('\ufeff', '').strip()
+        snippet = msg_data.get("snippet", "").replace('\u200c', '').replace('\u034f', '').replace('\u200f', '').replace('\xa0', '').replace('\ufeff', '').strip()
         body = extract_email_body(payload)
 
         email_data = {
@@ -67,7 +70,7 @@ def list_latest_emails(max_results=1):
                 "to": to,
                 'timestamp': timestamp,
                 "subject": subject,
-                "body": body
+                "body": snippet
         }
 
 
@@ -96,10 +99,9 @@ def list_latest_emails(max_results=1):
 
     return emails_list
 
-
-def fetch_emails():
-    emails = list_latest_emails()
-    return emails
+@function_tool
+def fetch_emails() -> List[Email]:
+    return list_latest_emails()
 
 
 if __name__ == '__main__':

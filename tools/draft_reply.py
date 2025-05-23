@@ -7,6 +7,7 @@ from email.mime.text import MIMEText
 import base64
 from googleapiclient.discovery import build
 from services.auth import authenticate
+from models.interfaces import Email
 
 
 
@@ -14,7 +15,7 @@ gemini_api_key = os.getenv("GEMINI_API_KEY")
 if not gemini_api_key:
     raise ValueError("GEMINI_API_KEY is not set")
 
-def generate_reply(email: str) -> str:
+def generate_reply(email: Email) -> str:
     """Draft a reply to an email."""
     genai.configure(api_key=gemini_api_key)
     model = genai.GenerativeModel("gemini-2.0-flash")
@@ -32,7 +33,8 @@ def generate_reply(email: str) -> str:
     return response.text
 
 
-def draft_email(email_id: str, draft_text: str) -> str:
+@function_tool
+def draft_email(email_id: str, draft_text: Email) -> str:
     """Draft an email."""
 
     creds = authenticate()
@@ -56,7 +58,6 @@ def draft_email(email_id: str, draft_text: str) -> str:
     # Step 3: Encode and send
     raw_message = base64.urlsafe_b64encode(draft.as_bytes()).decode()
 
-    # Call Gmail API to create draft
     draft_body = {
         'message': {
             'raw': raw_message

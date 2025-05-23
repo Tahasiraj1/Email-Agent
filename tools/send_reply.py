@@ -8,7 +8,7 @@ from services.auth import authenticate
 
 
 @function_tool
-def reply_to_email(service, email_id: str, reply_text: str) -> str:
+def reply_to_email(email_id: str, reply_text: str) -> str:
     """Send a proper reply to an email using the original message metadata."""
 
     creds = authenticate()
