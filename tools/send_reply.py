@@ -7,7 +7,7 @@ from email.mime.text import MIMEText
 from services.auth import authenticate
 
 
-@function_tool
+# @function_tool
 def reply_to_email(email_id: str, reply_text: str) -> str:
     """Send a proper reply to an email using the original message metadata."""
 

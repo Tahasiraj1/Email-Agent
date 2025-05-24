@@ -1,4 +1,4 @@
-from agents import Agent, AsyncOpenAI, OpenAIChatCompletionsModel, Runner, set_tracing_disabled
+from agents import Agent, AsyncOpenAI, OpenAIChatCompletionsModel, Runner, set_tracing_disabled, function_tool
 from tools.fetch_unread import fetch_emails
 from tools.summarize import summarize_email
 from tools.send_reply import reply_to_email
@@ -19,43 +19,104 @@ model = OpenAIChatCompletionsModel(
     openai_client=provider,
 )
 
-fetch_agent = Agent(
-    name="Fetch Emails",
-    instructions="You are an email assistant, you can fetch emails from my inbox.",
-    model=model,
-    tools=[fetch_emails],
-)
+# fetch_agent = Agent(
+#     name="Fetch Emails",
+#     instructions="""
+#     Your job is to fetch all emails from my inbox, they will be automatically categorized based on their content.
+#     """,
+#     model=model,
+#     tools=[fetch_emails],
+# )
 
-summarize_agent = Agent(
-    name="Summarize Email",
-    instructions="You are an email assistant, you can summarize emails from my inbox.",
-    model=model,
-    tools=[summarize_email],
-)
+# summarize_agent = Agent(
+#     name="Summarize Email",
+#     instructions="""
+#     Summarize the content of the emails passed to you, by passing the email content to the tool.
+#     """,
+#     model=model,
+#     tools=[summarize_email],
+# )
 
-reply_agent = Agent(
-    name="Reply to Email",
-    instructions="You are an email assistant, you can reply to emails from my inbox.",
-    model=model,
-    tools=[reply_to_email],
-)
+# generate_reply_agent = Agent(
+#     name="Generate Reply",
+#     instructions="""
+#     Generate a reply for the email passed to you, by passing the email content to the tool.
+#     """,
+#     model=model,
+#     tools=[generate_reply],
+# )
 
-draft_reply = Agent(
-    name="Draft Reply",
-    instructions="You are an email assistant, you can generate and draft a reply to emails from my inbox.",
-    model=model,
-    tools=[generate_reply, draft_email],
-)
+# reply_agent = Agent(
+#     name="Reply to Email",
+#     instructions="""
+#     IF the email category is urgent, send reply to the sender immediately, by passing the email_id and generated reply to the tool.
+#     """,
+#     model=model,
+#     tools=[reply_to_email],
+# )
+
+# draft_reply = Agent(
+#     name="Draft Reply",
+#     instructions="""
+#     IF the email category is Draft, draft the email, by passing the email_id and generated reply to the tool.
+#     """,
+#     model=model,
+#     tools=[draft_email],
+# )
 
 
-triage_agent = Agent(
+@function_tool
+def process_emails_pipeline():
+    emails = fetch_emails()
+
+    if emails:
+        for email in emails:
+            if 'Urgent'.lower() in email['category'].lower():
+                summary = summarize_email(email)
+                reply = generate_reply(email, summary)
+                message = reply_to_email(email["email_id"], reply)
+                print("\nReply: ", reply, "\n Message: ", message)
+            
+            elif 'Draft'.lower() in email['category'].lower():
+                summary = summarize_email(email)
+                reply = generate_reply(email, summary)
+                draft = draft_email(email["email_id"], reply)
+                print("\Reply: ", reply, "\n Draft: ", draft)
+
+            elif 'Important'.lower() in email['category'].lower():
+                summary = summarize_email(email)
+                reply = generate_reply(email, summary)
+                message = draft_email(email["email_id"], reply)
+                print("\nReply: ", reply, "\n Message: ", message)
+            else:
+                print("\Spam email: ", email)
+
+email_assistant = Agent(
     name="Email Assistant",
-    instructions="You are an email assistant. Help users manage and understand their inbox. You can handoff to following agents to help you: fetch_emails, summarize_email, reply_to_email, generate_reply",
+    instructions="""
+    You are a professional Email Assistant tasked with automating Gmail inbox management. 
+    Your objective is to efficiently process unread emails using the following procedure:
+    
+    1. Fetch all unread emails from the user's inbox.
+    2. For each email:
+       - Determine its category (e.g., Urgent, Draft, or Other).
+       - If the email category is "Urgent":
+         a. Generate a concise summary of the email.
+         b. Compose an appropriate reply based on the summary and email content.
+         c. Immediately send the reply using the provided tools.
+       - If the email category is "Draft":
+         a. Generate a concise summary of the email.
+         b. Compose a suitable reply draft based on the summary and email content.
+         c. Save the draft reply using the provided tools.
+       - If the email category is neither "Urgent" nor "Draft", skip it or notify the user.
+    
+    You must use the `process_emails_pipeline` tool to handle the entire workflow, including fetching emails, summarizing, determining categories, generating replies, and either sending or drafting them as appropriate. Always prioritize accuracy, conciseness, and professionalism in your communication.
+    
+    Do not perform redundant actions. Do not summarize, reply, or draft for emails that do not meet the "Urgent" or "Draft" criteria.
+    """,
     model=model,
-    handoffs=[]
+    tools=[process_emails_pipeline],
 )
 
-result = Runner.run_sync(triage_agent, input="Fetch and Draft a reply to the latest email from my inbox.")
+result = Runner.run_sync(email_assistant, input="Fetch latest email, and act accordingly.")
 print("Summary: ", result.final_output)
-
-

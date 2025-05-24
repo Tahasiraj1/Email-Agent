@@ -79,17 +79,26 @@ def list_latest_emails(max_results=1):
         model = genai.GenerativeModel("gemini-2.0-flash")
 
         prompt = f"""
-        DO NOT provide explanations or additional information.
-        JUST return the category name, from the following categories:
+        DO NOT provide explanations, clarifications, or additional information.
+        JUST return a single category name from the following list:
 
-        - Urgent (immediately respond)
-        - Important (requires attention)
-        - Draft (draft email)
-        - Spam (Ignore)
+        - Urgent (requires immediate attention and action)
+        - Important (needs attention but not immediate)
+        - Draft (email is a draft or marked as draft)
+        - Spam (irrelevant or unsolicited)
 
-        Categorize the following emails or email:
+        Your task:
+        1️⃣ Carefully read and understand the email content.  
+        2️⃣ Look for implicit urgency indicators (e.g., payment deadlines, critical errors, client escalations, phrases like "as soon as possible", "immediate", or "critical").  
+        3️⃣ Avoid misclassifying important or urgent emails as spam, even if they look suspicious.  
+        4️⃣ Choose the **most appropriate category** for the email(s).
+
+        Email(s) to categorize:
         {email_data}
+
+        JUST return the category name (Urgent, Important, Draft, Spam). No explanations or extra text.
         """
+
 
         response = model.generate_content(prompt)
         print(response.text)
@@ -99,7 +108,7 @@ def list_latest_emails(max_results=1):
 
     return emails_list
 
-@function_tool
+# @function_tool
 def fetch_emails() -> List[Email]:
     return list_latest_emails()
 

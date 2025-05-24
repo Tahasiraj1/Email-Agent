@@ -15,15 +15,16 @@ gemini_api_key = os.getenv("GEMINI_API_KEY")
 if not gemini_api_key:
     raise ValueError("GEMINI_API_KEY is not set")
 
-def generate_reply(email: Email) -> str:
-    """Draft a reply to an email."""
+# @function_tool
+def generate_reply(email: Email, summary: str) -> str:
+    """Generate a reply to an email."""
     genai.configure(api_key=gemini_api_key)
     model = genai.GenerativeModel("gemini-2.0-flash")
 
-    summary = summarize_email(email)
-
     prompt = f"""
-    Generate a draft reply to the following email:
+    My name is Taha Siraj. Mention my name in the email if needed.
+    NEVER ADD extra lines such as 'Okay heres the reply for email...'
+    Generate a reply to the following email:
     {email}
     
     Summary:
@@ -33,7 +34,7 @@ def generate_reply(email: Email) -> str:
     return response.text
 
 
-@function_tool
+# @function_tool
 def draft_email(email_id: str, draft_text: Email) -> str:
     """Draft an email."""
 
