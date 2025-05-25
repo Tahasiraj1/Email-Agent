@@ -1,5 +1,4 @@
 import google.generativeai as genai
-from tools.fetch_unread import fetch_emails
 from models.interfaces import Email
 import os
 
@@ -19,10 +18,3 @@ def summarize_email(email_content: Email) -> str:
 
     response = model.generate_content(prompt)
     return response.text
-
-if __name__ == '__main__':
-    email = fetch_emails()
-
-    print(f"\n{email}")
-    summary = summarize_email(email)
-    print("\nSummary: ", summary)
