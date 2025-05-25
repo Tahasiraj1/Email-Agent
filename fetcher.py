@@ -5,6 +5,7 @@ from categorizer import EmailCategorizer
 from typing import List
 import base64
 
+
 class EmailFetcher:
     def __init__(self, max_results=1):
         self.max_results = max_results
@@ -29,7 +30,7 @@ class EmailFetcher:
                 return EmailFetcher._decode_base64(part["body"]["data"]).replace('\r\n', ' ').strip()
             elif mime_type == "text/html" and "data" in part.get("body", {}):
                 return EmailFetcher._decode_base64(part["body"]["data"]).replace('\r\n', ' ').strip()
-                
+
         return "[Could not extract body]"
 
     def _list_latest_emails(self) -> List[Email]:
@@ -37,7 +38,8 @@ class EmailFetcher:
         creds = authenticate()
         service = build('gmail', 'v1', credentials=creds)
 
-        results = service.users().messages().list(userId='me', maxResults=self.max_results).execute()
+        results = service.users().messages().list(
+            userId='me', maxResults=self.max_results, q="is:unread").execute()
         messages = results.get('messages', [])
 
         emails_list = []
@@ -47,30 +49,36 @@ class EmailFetcher:
             return
 
         for msg in messages:
-            msg_data = service.users().messages().get(userId='me', id=msg['id'], format='full').execute()
+            message_id = msg['id']
+            msg_data = service.users().messages().get(
+                userId='me', id=message_id, format='full').execute()
 
             email_id = msg_data.get("id", "")
             thread_id = msg_data.get("threadId", "")
             labels_id = msg_data.get("labelIds", [])
             payload = msg_data.get("payload", {})
             headers = payload.get("headers", [])
-            
+
             timestamp = msg_data.get("internalDate", "")
-            subject = next((h["value"] for h in headers if h["name"] == "Subject"), "(No Subject)")
-            sender = next((h["value"] for h in headers if h["name"] == "From"), "(No Sender)")
-            to = next((h['value'] for h in headers if h['name'] == 'Delivered-To'), None)
-            snippet = msg_data.get("snippet", "").replace('\u200c', '').replace('\u034f', '').replace('\u200f', '').replace('\xa0', '').replace('\ufeff', '').strip()
+            subject = next(
+                (h["value"] for h in headers if h["name"] == "Subject"), "(No Subject)")
+            sender = next(
+                (h["value"] for h in headers if h["name"] == "From"), "(No Sender)")
+            to = next((h['value']
+                      for h in headers if h['name'] == 'Delivered-To'), None)
+            snippet = msg_data.get("snippet", "").replace('\u200c', '').replace(
+                '\u034f', '').replace('\u200f', '').replace('\xa0', '').replace('\ufeff', '').strip()
             body = EmailFetcher._extract_email_body(payload)
 
             email_data = {
-                    "email_id": email_id,
-                    "thread_id": thread_id,
-                    "labels_id": labels_id,
-                    "sender": sender,
-                    "to": to,
-                    'timestamp': timestamp,
-                    "subject": subject,
-                    "body": snippet
+                "email_id": email_id,
+                "thread_id": thread_id,
+                "labels_id": labels_id,
+                "sender": sender,
+                "to": to,
+                'timestamp': timestamp,
+                "subject": subject,
+                "body": snippet
             }
 
             categorizer = EmailCategorizer(email_data)
@@ -80,6 +88,12 @@ class EmailFetcher:
             email_data["category"] = category
 
             emails_list.append(email_data)
+
+            service.users().messages().modify(
+                userId='me',
+                id=message_id,
+                body={'removeLabelIds': ['UNREAD']}
+            ).execute()
 
         return emails_list
 
