@@ -1,5 +1,8 @@
 from agents import Agent, AsyncOpenAI, OpenAIChatCompletionsModel, Runner, set_tracing_disabled, function_tool
 from processor import EmailProcessor
+from fetcher import EmailFetcher
+from replier import EmailReplier
+from drafter import EmailDrafter
 import os
 
 set_tracing_disabled(disabled=True)
@@ -18,7 +21,10 @@ model = OpenAIChatCompletionsModel(
 
 @function_tool
 def process_emails_pipeline():
-    processor = EmailProcessor()
+    fetcher = EmailFetcher()
+    replier = EmailReplier()
+    drafter = EmailDrafter()
+    processor = EmailProcessor(fetcher, replier, drafter)
     processor.process_emails()
 
 email_assistant = Agent(
@@ -48,32 +54,5 @@ email_assistant = Agent(
     tools=[process_emails_pipeline],
 )
 
-result = Runner.run_sync(email_assistant, 
-input="""I'm interested in this job and I've expereince in FrontEnd Development, I specializes in TypeScript, React, Next.js, Node.js, Tailwind CSS, and MongoDB Atlas, I'm not graduate but I've made real-world projects. Their post: We're Hiring: Junior Frontend Developer (Fresh Graduates Welcome!)
-
-Are you passionate about web development and ready to kickstart your tech career? We're looking for a Junior Frontend Developer to join our team and grow with us!
-
-Experience: 0–6 months
-Location: Karachi, Pakistan.
-Employment Type: Contract/ Full -Time
-
-Tech Stack:
-- React.js (must have)
-- MUI (Material UI)
-- HTML5, CSS3
-
-Nice to Have:
-- Basic knowledge of Node.js or backend fundamentals 
-
-What We’re Looking For:
-- Strong eagerness to learn and adapt
-- Good understanding of modern frontend development
-- Team player with problem-solving attitude
-
-Perks:
-- Great mentorship and growth opportunities
-- Flexible work environment
-- Exposure to real-world projects from day one
-
-How to Apply: Send your resume and portfolio (if any) to hr@webxsquare.com with the subject line “Junior Frontend Developer – Application.""")
+result = Runner.run_sync(email_assistant, input="Fetch latest email, and act accordingly.")
 print("Summary: ", result.final_output)
