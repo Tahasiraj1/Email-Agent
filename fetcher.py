@@ -49,9 +49,9 @@ class EmailFetcher:
             return
 
         for msg in messages:
-            message_id = msg['id']
+            msg_id = msg['id']
             msg_data = service.users().messages().get(
-                userId='me', id=message_id, format='full').execute()
+                userId='me', id=msg_id, format='full').execute()
 
             email_id = msg_data.get("id", "")
             thread_id = msg_data.get("threadId", "")
@@ -91,7 +91,7 @@ class EmailFetcher:
 
             service.users().messages().modify(
                 userId='me',
-                id=message_id,
+                id=msg_id,
                 body={'removeLabelIds': ['UNREAD']}
             ).execute()
 
