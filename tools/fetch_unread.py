@@ -1,11 +1,10 @@
-from services.auth import authenticate
 from googleapiclient.discovery import build
+from services.auth import authenticate
 import google.generativeai as genai
-from agents import function_tool
+from models.interfaces import Email
+from typing import List
 import base64
 import os
-from typing import List
-from models.interfaces import Email
 
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 if not gemini_api_key:
@@ -108,7 +107,6 @@ def list_latest_emails(max_results=1):
 
     return emails_list
 
-# @function_tool
 def fetch_emails() -> List[Email]:
     return list_latest_emails()
 

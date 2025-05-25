@@ -1,8 +1,5 @@
 from agents import Agent, AsyncOpenAI, OpenAIChatCompletionsModel, Runner, set_tracing_disabled, function_tool
-from tools.fetch_unread import fetch_emails
-from tools.summarize import summarize_email
-from tools.send_reply import reply_to_email
-from tools.draft_reply import generate_reply, draft_email
+from processor import EmailProcessor
 import os
 
 set_tracing_disabled(disabled=True)
@@ -19,77 +16,10 @@ model = OpenAIChatCompletionsModel(
     openai_client=provider,
 )
 
-# fetch_agent = Agent(
-#     name="Fetch Emails",
-#     instructions="""
-#     Your job is to fetch all emails from my inbox, they will be automatically categorized based on their content.
-#     """,
-#     model=model,
-#     tools=[fetch_emails],
-# )
-
-# summarize_agent = Agent(
-#     name="Summarize Email",
-#     instructions="""
-#     Summarize the content of the emails passed to you, by passing the email content to the tool.
-#     """,
-#     model=model,
-#     tools=[summarize_email],
-# )
-
-# generate_reply_agent = Agent(
-#     name="Generate Reply",
-#     instructions="""
-#     Generate a reply for the email passed to you, by passing the email content to the tool.
-#     """,
-#     model=model,
-#     tools=[generate_reply],
-# )
-
-# reply_agent = Agent(
-#     name="Reply to Email",
-#     instructions="""
-#     IF the email category is urgent, send reply to the sender immediately, by passing the email_id and generated reply to the tool.
-#     """,
-#     model=model,
-#     tools=[reply_to_email],
-# )
-
-# draft_reply = Agent(
-#     name="Draft Reply",
-#     instructions="""
-#     IF the email category is Draft, draft the email, by passing the email_id and generated reply to the tool.
-#     """,
-#     model=model,
-#     tools=[draft_email],
-# )
-
-
 @function_tool
 def process_emails_pipeline():
-    emails = fetch_emails()
-
-    if emails:
-        for email in emails:
-            if 'Urgent'.lower() in email['category'].lower():
-                summary = summarize_email(email)
-                reply = generate_reply(email, summary)
-                message = reply_to_email(email["email_id"], reply)
-                print("\nReply: ", reply, "\n Message: ", message)
-            
-            elif 'Draft'.lower() in email['category'].lower():
-                summary = summarize_email(email)
-                reply = generate_reply(email, summary)
-                draft = draft_email(email["email_id"], reply)
-                print("\Reply: ", reply, "\n Draft: ", draft)
-
-            elif 'Important'.lower() in email['category'].lower():
-                summary = summarize_email(email)
-                reply = generate_reply(email, summary)
-                message = draft_email(email["email_id"], reply)
-                print("\nReply: ", reply, "\n Message: ", message)
-            else:
-                print("\Spam email: ", email)
+    processor = EmailProcessor()
+    processor.process_emails()
 
 email_assistant = Agent(
     name="Email Assistant",
@@ -118,5 +48,32 @@ email_assistant = Agent(
     tools=[process_emails_pipeline],
 )
 
-result = Runner.run_sync(email_assistant, input="Fetch latest email, and act accordingly.")
+result = Runner.run_sync(email_assistant, 
+input="""I'm interested in this job and I've expereince in FrontEnd Development, I specializes in TypeScript, React, Next.js, Node.js, Tailwind CSS, and MongoDB Atlas, I'm not graduate but I've made real-world projects. Their post: We're Hiring: Junior Frontend Developer (Fresh Graduates Welcome!)
+
+Are you passionate about web development and ready to kickstart your tech career? We're looking for a Junior Frontend Developer to join our team and grow with us!
+
+Experience: 0–6 months
+Location: Karachi, Pakistan.
+Employment Type: Contract/ Full -Time
+
+Tech Stack:
+- React.js (must have)
+- MUI (Material UI)
+- HTML5, CSS3
+
+Nice to Have:
+- Basic knowledge of Node.js or backend fundamentals 
+
+What We’re Looking For:
+- Strong eagerness to learn and adapt
+- Good understanding of modern frontend development
+- Team player with problem-solving attitude
+
+Perks:
+- Great mentorship and growth opportunities
+- Flexible work environment
+- Exposure to real-world projects from day one
+
+How to Apply: Send your resume and portfolio (if any) to hr@webxsquare.com with the subject line “Junior Frontend Developer – Application.""")
 print("Summary: ", result.final_output)

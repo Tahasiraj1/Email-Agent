@@ -1,13 +1,10 @@
-from agents import function_tool
 from tools.fetch_unread import fetch_emails
-from tools.draft_reply import generate_reply
+from tools.reply_generator import generate_reply
 from googleapiclient.discovery import build
-import base64
 from email.mime.text import MIMEText
 from services.auth import authenticate
+import base64
 
-
-# @function_tool
 def reply_to_email(email_id: str, reply_text: str) -> str:
     """Send a proper reply to an email using the original message metadata."""
 

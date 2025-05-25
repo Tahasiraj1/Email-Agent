@@ -1,40 +1,11 @@
-from agents import function_tool
-import os
-import google.generativeai as genai
 from tools.fetch_unread import fetch_emails
-from tools.summarize import summarize_email
+from tools.reply_generator import generate_reply
 from email.mime.text import MIMEText
-import base64
 from googleapiclient.discovery import build
 from services.auth import authenticate
 from models.interfaces import Email
+import base64
 
-
-
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-if not gemini_api_key:
-    raise ValueError("GEMINI_API_KEY is not set")
-
-# @function_tool
-def generate_reply(email: Email, summary: str) -> str:
-    """Generate a reply to an email."""
-    genai.configure(api_key=gemini_api_key)
-    model = genai.GenerativeModel("gemini-2.0-flash")
-
-    prompt = f"""
-    My name is Taha Siraj. Mention my name in the email if needed.
-    NEVER ADD extra lines such as 'Okay heres the reply for email...'
-    Generate a reply to the following email:
-    {email}
-    
-    Summary:
-    {summary}
-    """
-    response = model.generate_content(prompt)
-    return response.text
-
-
-# @function_tool
 def draft_email(email_id: str, draft_text: Email) -> str:
     """Draft an email."""
 
