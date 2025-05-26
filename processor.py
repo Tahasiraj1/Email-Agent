@@ -1,39 +1,49 @@
 from tools.summarize import summarize_email
 from tools.reply_generator import generate_reply
+import time
 
 
 class EmailProcessor:
-    def __init__(self, fetcher, replier, drafter):
+    def __init__(self, fetcher, replier, drafter, time_interval=60):
         self.fetcher = fetcher
         self.replier = replier
         self.drafter = drafter
+        self.time_interval = time_interval
         self.emails = []
 
     def process_emails(self):
-        self.emails = self.fetcher.fetch_emails()
+        while True:
+            try:
+                self.emails = self.fetcher.fetch_emails()
 
-        for email in self.emails:
-            if 'Urgent'.lower() in email['category'].lower():
-                summary = summarize_email(email)
-                reply = generate_reply(email, summary)
-                print(f"Replying to email ID: {email['email_id']}")
-                print(f"Reply content: {reply}")
-                message = self.replier.reply_to_email(email["email_id"], reply)
-                print("\nReply: ", reply, "\n Message: ", message)
+                for email in self.emails:
+                    if 'Urgent'.lower() in email['category'].lower():
+                        summary = summarize_email(email)
+                        reply = generate_reply(email, summary)
+                        print(f"Replying to email ID: {email['email_id']}")
+                        print(f"Reply content: {reply}")
+                        message = self.replier.reply_to_email(
+                            email["email_id"], reply)
+                        print("\nReply: ", reply, "\n Message: ", message)
 
-            elif 'Draft'.lower() in email['category'].lower():
-                summary = summarize_email(email)
-                reply = generate_reply(email, summary)
-                draft = self.drafter.draft_email(email["email_id"], reply)
-                print("\Reply: ", reply, "\n Draft: ", draft)
+                    elif 'Draft'.lower() in email['category'].lower():
+                        summary = summarize_email(email)
+                        reply = generate_reply(email, summary)
+                        draft = self.drafter.draft_email(email["email_id"], reply)
+                        print("\Reply: ", reply, "\n Draft: ", draft)
 
-            elif 'Important'.lower() in email['category'].lower():
-                summary = summarize_email(email)
-                reply = generate_reply(email, summary)
-                message = self.drafter.draft_email(email["email_id"], reply)
-                print("\nReply: ", reply, "\n Message: ", message)
-            else:
-                print("\Spam email: ", email)
+                    elif 'Important'.lower() in email['category'].lower():
+                        summary = summarize_email(email)
+                        reply = generate_reply(email, summary)
+                        message = self.drafter.draft_email(
+                            email["email_id"], reply)
+                        print("\nReply: ", reply, "\n Message: ", message)
+                    else:
+                        print("\Spam email: ", email)
 
-        else:
-            print("No emails found.")
+                else:
+                    print("No emails found.")
+            except Exception as e:
+                print(f"Error: {e}")
+            finally:
+                time.sleep(self.time_interval)
