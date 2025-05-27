@@ -1,9 +1,7 @@
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
-from functools import wraps
 import os
-
 
 SCOPES = [
     "https://www.googleapis.com/auth/gmail.readonly",
@@ -11,9 +9,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/gmail.modify",  # Optional: to mark read/labels
 ]
 
-
 def authenticate(func):
-    @wraps(func)
     def wrapper(*args, **kwargs):
         # Use saved token if exists
         if os.path.exists('token.json'):
