@@ -9,9 +9,9 @@ import base64
 
 
 class EmailDrafter:
-    def draft_email(self, email_id: str, draft_text: Email) -> str:
+    @authenticate
+    def draft_email(self, email_id: str, draft_text: Email, creds=None) -> str:
         """Draft an email."""
-        creds = authenticate()
         service = build('gmail', 'v1', credentials=creds)
 
         email = service.users().messages().get(

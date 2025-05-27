@@ -33,9 +33,9 @@ class EmailFetcher:
 
         return "[Could not extract body]"
 
-    def _list_latest_emails(self) -> List[Email]:
+    @authenticate
+    def _list_latest_emails(self, creds=None) -> List[Email]:
 
-        creds = authenticate()
         service = build('gmail', 'v1', credentials=creds)
 
         results = service.users().messages().list(

@@ -5,10 +5,10 @@ import base64
 
 
 class EmailReplier:
-    def reply_to_email(self, email_id: str, reply_text: str) -> str:
+    @authenticate
+    def reply_to_email(self, email_id: str, reply_text: str, creds=None) -> str:
         """Send a proper reply to an email using the original message metadata."""
 
-        creds = authenticate()
         service = build('gmail', 'v1', credentials=creds)
 
         # Step 1: Get original message metadata
