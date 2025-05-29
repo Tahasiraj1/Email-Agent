@@ -11,6 +11,7 @@ SCOPES = [
 
 def authenticate(func):
     def wrapper(*args, **kwargs):
+        creds=None
         # Use saved token if exists
         if os.path.exists('token.json'):
             creds = Credentials.from_authorized_user_file('token.json', SCOPES)

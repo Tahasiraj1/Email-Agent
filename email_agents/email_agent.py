@@ -3,6 +3,9 @@ from processor import EmailProcessor
 from fetcher import EmailFetcher
 from replier import EmailReplier
 from drafter import EmailDrafter
+from composer import EmailComposer
+from tools.reply_generator import generate_email_content
+from email_agents.instructions import COMPOSER_INSTRUCTIONS, EMAIL_ASSISTANT_INSTRUCTIONS
 import os
 
 set_tracing_disabled(disabled=True)
@@ -27,32 +30,33 @@ def process_emails_pipeline():
     processor = EmailProcessor(fetcher, replier, drafter)
     processor.process_emails()
 
-email_assistant = Agent(
-    name="Email Assistant",
-    instructions="""
-    You are a professional Email Assistant tasked with automating Gmail inbox management. 
-    Your objective is to efficiently process unread emails using the following procedure:
-    
-    1. Fetch all unread emails from the user's inbox.
-    2. For each email:
-       - Determine its category (e.g., Urgent, Draft, or Other).
-       - If the email category is "Urgent":
-         a. Generate a concise summary of the email.
-         b. Compose an appropriate reply based on the summary and email content.
-         c. Immediately send the reply using the provided tools.
-       - If the email category is "Draft":
-         a. Generate a concise summary of the email.
-         b. Compose a suitable reply draft based on the summary and email content.
-         c. Save the draft reply using the provided tools.
-       - If the email category is neither "Urgent" nor "Draft", skip it or notify the user.
-    
-    You must use the `process_emails_pipeline` tool to handle the entire workflow, including fetching emails, summarizing, determining categories, generating replies, and either sending or drafting them as appropriate. Always prioritize accuracy, conciseness, and professionalism in your communication.
-    
-    Do not perform redundant actions. Do not summarize, reply, or draft for emails that do not meet the "Urgent" or "Draft" criteria.
-    """,
+@function_tool
+def compose_email_pipeline(to: str, subject: str, user_query: str):
+    """Compose an email, based on the provided recipient, subject, and user_query.
+
+    Args:
+        to (str): The recipient's email address.
+        subject (str): The email subject.
+        user_query (str): The user's request, based on which the email content is generated.
+    """
+    composer = EmailComposer()
+    reply = generate_email_content(user_query=user_query)
+    composer.compose_email(to=to, subject=subject, body=reply)
+
+composer_agent = Agent(
+    name="Composer Agent",
+    instructions=COMPOSER_INSTRUCTIONS,
     model=model,
-    tools=[process_emails_pipeline],
+    tools=[compose_email_pipeline]  # register the tool
 )
 
-result = Runner.run_sync(email_assistant, input="Fetch latest email, and act accordingly.")
+email_assistant = Agent(
+    name="Email Assistant",
+    instructions=EMAIL_ASSISTANT_INSTRUCTIONS,
+    model=model,
+    tools=[process_emails_pipeline],
+    handoffs=[composer_agent],
+)
+
+result = Runner.run_sync(email_assistant, input="Send an email to tahasiraj200@gmail.com, about the latest feature I added in my Email Agent Project, i.e Composing emails.")
 print("Summary: ", result.final_output)

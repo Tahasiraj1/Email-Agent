@@ -1,5 +1,5 @@
 from tools.summarize import summarize_email
-from tools.reply_generator import generate_reply
+from tools.reply_generator import generate_email_content
 import time
 
 
@@ -19,7 +19,7 @@ class EmailProcessor:
                 for email in self.emails:
                     if 'Urgent'.lower() in email['category'].lower():
                         summary = summarize_email(email)
-                        reply = generate_reply(email, summary)
+                        reply = generate_email_content(email=email, summary=summary)
                         print(f"Replying to email ID: {email['email_id']}")
                         print(f"Reply content: {reply}")
                         message = self.replier.reply_to_email(
@@ -28,13 +28,13 @@ class EmailProcessor:
 
                     elif 'Draft'.lower() in email['category'].lower():
                         summary = summarize_email(email)
-                        reply = generate_reply(email, summary)
+                        reply = generate_email_content(email=email, summary=summary)
                         draft = self.drafter.draft_email(email["email_id"], reply)
                         print("\Reply: ", reply, "\n Draft: ", draft)
 
                     elif 'Important'.lower() in email['category'].lower():
                         summary = summarize_email(email)
-                        reply = generate_reply(email, summary)
+                        reply = generate_email_content(email=email, summary=summary)
                         message = self.drafter.draft_email(
                             email["email_id"], reply)
                         print("\nReply: ", reply, "\n Message: ", message)

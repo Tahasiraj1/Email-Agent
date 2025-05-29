@@ -3,7 +3,7 @@ from googleapiclient.discovery import build
 from services.auth import authenticate
 from models.interfaces import Email
 from fetcher import EmailFetcher
-from tools.reply_generator import generate_reply
+from tools.reply_generator import generate_email_content
 from tools.summarize import summarize_email
 import base64
 
@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
         summary = summarize_email(email)
 
-        reply = generate_reply(email, summary=summary)
+        reply = generate_email_content(email=email, summary=summary)
         print("\nReply: ", reply)
 
         draft = EmailDrafter.draft_email(email["email_id"], reply)
