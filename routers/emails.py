@@ -1,30 +1,35 @@
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 from email_agents.email_agent import email_assistant
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi import FastAPI
 from agents import Runner
-from typing import List
+import asyncio
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:3000",
-    # Add more origins here
-]
+scheduler = BackgroundScheduler()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Define request body schema
-class EmailRequest(BaseModel):
-    user_input: str
+# Reusable agent runner function
+async def run_email_agent(user_input: str):
+    result = await Runner.run(email_assistant, input=user_input)
+    return result.final_output
 
 @app.post("/emails")
-async def process_emails(request: EmailRequest):
-    result = await Runner.run(email_assistant, input=request.user_input)
-    return {"status": "ok", "summary": result.final_output}
+async def process_emails(email: BaseModel):
+    # Call agent with dynamic input from the POST body
+    summary = await run_email_agent(email.user_input)
+    return {"status": "ok", "summary": summary}
+
+def scheduled_task():
+    asyncio.run(run_email_agent("Send an email to tahasiraj200@gmail.com, about the latest feature I added in my Email Agent Project, i.e APScheduler."))
+
+scheduler.add_job(
+    scheduled_task,
+    trigger=IntervalTrigger(seconds=30),
+    id="process_emails",
+    name="Process Emails",
+    replace_existing=True,
+)
+
+scheduler.start()

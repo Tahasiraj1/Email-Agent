@@ -1,6 +1,5 @@
+from agents import Agent, AsyncOpenAI, set_tracing_disabled, function_tool, OpenAIChatCompletionsModel
 from email_agents.instructions import COMPOSER_INSTRUCTIONS, EMAIL_ASSISTANT_INSTRUCTIONS
-from agents.extensions.models.litellm_model import LiteLLMModel
-from agents import Agent, set_tracing_disabled, function_tool
 from tools.reply_generator import generate_email_content
 from processor import EmailProcessor
 from composer import EmailComposer
@@ -11,8 +10,17 @@ import os
 
 set_tracing_disabled(disabled=True)
 
-api_key = os.getenv("GEMINI_API_KEY")
-MODEL = 'gemini/gemini-2.0-flash'
+gemini_api_key = os.getenv("GEMINI_API_KEY")
+
+provider = AsyncOpenAI(
+    api_key=gemini_api_key,
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+)
+
+model = OpenAIChatCompletionsModel(
+    model='gemini-2.0-flash',
+    openai_client=provider,
+)
 
 @function_tool
 def process_emails_pipeline():
@@ -38,14 +46,14 @@ def compose_email_pipeline(to: str, subject: str, user_query: str):
 composer_agent = Agent(
     name="Composer Agent",
     instructions=COMPOSER_INSTRUCTIONS,
-    model=LiteLLMModel(model=MODEL, api_key=api_key),
+    model=model,
     tools=[compose_email_pipeline],
 )
 
 email_assistant = Agent(
     name="Email Assistant",
     instructions=EMAIL_ASSISTANT_INSTRUCTIONS,
-    model=LiteLLMModel(model=MODEL, api_key=api_key),
+    model=model,
     tools=[process_emails_pipeline],
     handoffs=[composer_agent],
 )
