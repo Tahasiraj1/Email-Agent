@@ -27,10 +27,10 @@ class EmailCategorizer:
             - Spam (irrelevant or unsolicited)
 
             Your task:
-            1️⃣ Carefully read and understand the email content.  
-            2️⃣ Look for implicit urgency indicators (e.g., payment deadlines, critical errors, client escalations, phrases like "as soon as possible", "immediate", or "critical").  
-            3️⃣ Avoid misclassifying important or urgent emails as spam, even if they look suspicious.  
-            4️⃣ Choose the **most appropriate category** for the email(s).
+            1. Carefully read and understand the email content.  
+            2. Look for implicit urgency indicators (e.g., payment deadlines, critical errors, client escalations, phrases like "as soon as possible", "immediate", or "critical").  
+            3. Avoid misclassifying important or urgent emails as spam, even if they look suspicious.  
+            4. Choose the **most appropriate category** for the email(s).
 
             Email(s) to categorize:
             {self.email}

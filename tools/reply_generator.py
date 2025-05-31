@@ -1,5 +1,7 @@
 import google.generativeai as genai
 from models.interfaces import Email
+from fetcher import EmailFetcher
+from tools.summarize import summarize_email
 import os
 
 gemini_api_key = os.getenv("GEMINI_API_KEY")
@@ -44,3 +46,11 @@ def generate_email_content(email: Email = None, summary: str = None, user_query:
 
     response = model.generate_content(prompt)
     return response.text.strip()
+
+if __name__ == "__main__":
+    fether = EmailFetcher()
+    email = fether.fetch_emails()
+    print(email)
+    summary = summarize_email(email)
+    reply = generate_email_content(email=email, summary=summary)
+    print(reply)
