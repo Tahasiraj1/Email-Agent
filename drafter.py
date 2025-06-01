@@ -46,6 +46,15 @@ class EmailDrafter:
 
         return draft
 
+    @authenticate
+    def draft_new_email(self, to: str, subject: str, draft_text: str, creds=None):
+        service = build('gmail', 'v1', credentials=creds)
+        draft = MIMEText(draft_text)
+        draft['To'] = to
+        draft['Subject'] = subject
+        raw_message = base64.urlsafe_b64encode(draft.as_bytes()).decode()
+        draft_body = {'message': {'raw': raw_message}}
+        return service.users().drafts().create(userId='me', body=draft_body).execute()
 
 if __name__ == '__main__':
     fetcher = EmailFetcher()
@@ -59,5 +68,9 @@ if __name__ == '__main__':
         reply = generate_email_content(email=email, summary=summary)
         print("\nReply: ", reply)
 
-        draft = EmailDrafter.draft_email(email["email_id"], reply)
+        drafter = EmailDrafter()
+        draft = drafter.draft_email(email["email_id"], reply)
         print("\nDraft: ", draft)
+
+        new_draft = drafter.draft_new_email(to='tahasiraj200@gmail.com', draft_text=reply, subject=email["subject"])
+        print("\nNew Draft: ", new_draft)
