@@ -3,43 +3,53 @@ from tools.reply_generator import generate_email_content
 
 
 class EmailProcessor:
-    def __init__(self, fetcher, replier, drafter, time_interval=60):
+    def __init__(self, fetcher, replier, drafter, send_message=None):
         self.fetcher = fetcher
         self.replier = replier
         self.drafter = drafter
-        self.time_interval = time_interval
+        self.send_message = send_message or (lambda msg: print(msg))
         self.emails = []
 
-    def process_emails(self):
+    async def process_emails(self):
         try:
             self.emails = self.fetcher.fetch_emails()
 
+            if not self.emails:
+                await self.send_message("✅ No unread emails found.")
+                return
+
             for email in self.emails:
+                await self.send_message(f"📧 Processing email: {email['subject']} (Category: {email['category']})")
+
                 if 'Urgent'.lower() in email['category'].lower():
                     summary = summarize_email(email)
                     reply = generate_email_content(email=email, summary=summary)
                     print(f"Replying to email ID: {email['email_id']}")
                     print(f"Reply content: {reply}")
-                    message = self.replier.reply_to_email(
+                    message = self.drafter.draft_email(
                         email["email_id"], reply)
-                    print("\nReply: ", reply, "\n Message: ", message)
+                    
+                    await self.send_message(f"✅ Replied to email ID: {email['email_id']} with reply: {reply}")
 
                 elif 'Draft'.lower() in email['category'].lower():
                     summary = summarize_email(email)
                     reply = generate_email_content(email=email, summary=summary)
                     draft = self.drafter.draft_email(email["email_id"], reply)
-                    print("\Reply: ", reply, "\n Draft: ", draft)
+                    
+                    await self.send_message(f"✅ Drafted email ID: {email['email_id']} with reply: {reply}")
 
                 elif 'Important'.lower() in email['category'].lower():
                     summary = summarize_email(email)
                     reply = generate_email_content(email=email, summary=summary)
                     message = self.drafter.draft_email(
                         email["email_id"], reply)
-                    print("\nReply: ", reply, "\n Message: ", message)
+                    
+                    await self.send_message(f"✅ Drafted email ID: {email['email_id']} with reply: {reply}")
+
                 else:
-                    print("\Spam email: ", email)
+                    await self.send_message(f"❌ Skipping email ID: {email['email_id']} with category: {email['category']}")
 
             else:
-                print("No emails found.")
+                await self.send_message("✅ No emails found.")
         except Exception as e:
-            print(f"Error: {e}")
+            await self.send_message(f"❌ Error: {e}")

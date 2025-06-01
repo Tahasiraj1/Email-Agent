@@ -1,14 +1,17 @@
-from fetcher import EmailFetcher
-from tools.summarize import summarize_email
-from tools.reply_generator import generate_reply
+from email_agents.email_agent import email_assistant
+from agents import Runner
+import chainlit as cl
 
-if __name__ == "__main__":
-    fetcher = EmailFetcher()
-    emails = fetcher.fetch_emails()
+async def run_agent(user_input: str):
+    result = await Runner.run(email_assistant, input=user_input)
+    final_output = result.final_output
+    print(final_output)
+    return final_output
 
-    for email in emails:
-        summary = summarize_email(email)
-        reply = generate_reply(email, summary)
-        print(f"Email: {email}")
-        print(f"Summary: {summary}")
-        print(f"Reply: {reply}")
+@cl.on_message
+async def on_message(message: cl.Message):
+    try:
+        result = await run_agent(message.content)
+        await cl.Message(content=result).send()
+    except Exception as e:
+        await cl.Message(content=f"Error: {e}").send()

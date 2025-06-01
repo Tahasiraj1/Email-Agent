@@ -6,6 +6,7 @@ from composer import EmailComposer
 from fetcher import EmailFetcher
 from replier import EmailReplier
 from drafter import EmailDrafter
+import chainlit as cl
 import os
 
 set_tracing_disabled(disabled=True)
@@ -23,15 +24,19 @@ model = OpenAIChatCompletionsModel(
 )
 
 @function_tool
-def process_emails_pipeline():
+async def process_emails_pipeline():
     fetcher = EmailFetcher()
     replier = EmailReplier()
     drafter = EmailDrafter()
-    processor = EmailProcessor(fetcher, replier, drafter)
-    processor.process_emails()
+
+    async def send_message_to_chat(message: str):
+        await cl.Message(content=message).send()
+
+    processor = EmailProcessor(fetcher, replier, drafter, send_message=send_message_to_chat)
+    await processor.process_emails()
 
 @function_tool
-def compose_email_pipeline(to: str, subject: str, user_query: str):
+async def compose_email_pipeline(to: str, subject: str, user_query: str):
     """Compose an email, based on the provided recipient, subject, and user_query.
 
     Args:
@@ -42,6 +47,7 @@ def compose_email_pipeline(to: str, subject: str, user_query: str):
     composer = EmailComposer()
     reply = generate_email_content(user_query=user_query)
     composer.compose_email(to=to, subject=subject, body=reply)
+    await cl.Message(content=f"📧 Email composed to {to} with subject '{subject}':\n{reply}").send()
 
 composer_agent = Agent(
     name="Composer Agent",
