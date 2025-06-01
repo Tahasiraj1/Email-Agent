@@ -1,6 +1,5 @@
 from tools.summarize import summarize_email
 from tools.reply_generator import generate_email_content
-import time
 
 
 class EmailProcessor:
