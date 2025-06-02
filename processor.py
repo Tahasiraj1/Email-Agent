@@ -24,26 +24,19 @@ class EmailProcessor:
                 if 'Urgent'.lower() in email['category'].lower():
                     summary = summarize_email(email)
                     reply = generate_email_content(email=email, summary=summary)
-                    print(f"Replying to email ID: {email['email_id']}")
-                    print(f"Reply content: {reply}")
-                    message = self.drafter.draft_email(
-                        email["email_id"], reply)
-                    
+                    self.drafter.draft_email(email["email_id"], reply)
                     await self.send_message(f"✅ Replied to email ID: {email['email_id']} with reply: {reply}")
 
                 elif 'Draft'.lower() in email['category'].lower():
                     summary = summarize_email(email)
                     reply = generate_email_content(email=email, summary=summary)
-                    draft = self.drafter.draft_email(email["email_id"], reply)
-                    
+                    self.drafter.draft_email(email["email_id"], reply)
                     await self.send_message(f"✅ Drafted email ID: {email['email_id']} with reply: {reply}")
 
                 elif 'Important'.lower() in email['category'].lower():
                     summary = summarize_email(email)
                     reply = generate_email_content(email=email, summary=summary)
-                    message = self.drafter.draft_email(
-                        email["email_id"], reply)
-                    
+                    self.drafter.draft_email(email["email_id"], reply)
                     await self.send_message(f"✅ Drafted email ID: {email['email_id']} with reply: {reply}")
 
                 else:
