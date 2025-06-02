@@ -48,7 +48,7 @@ class EmailDrafter:
 
             return draft
         except HttpError as e:
-            raise Exception(f"Error: {e}")
+            raise Exception(f"Error Drafting: {e}")
 
     @authenticate
     def draft_new_email(self, to: str, subject: str, draft_text: str, creds=None):
@@ -62,7 +62,7 @@ class EmailDrafter:
             draft_body = {'message': {'raw': raw_message}}
             return service.users().drafts().create(userId='me', body=draft_body).execute()
         except HttpError as e:
-            raise Exception(f"Error: {e}")
+            raise Exception(f"Error Drafting New Email: {e}")
 
 if __name__ == '__main__':
     fetcher = EmailFetcher()

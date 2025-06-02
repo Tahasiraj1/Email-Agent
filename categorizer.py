@@ -37,7 +37,8 @@ class EmailCategorizer:
 
             JUST return the category name (Urgent, Important, Draft, Spam). No explanations or extra text.
             """
-
-        category = model.generate_content(prompt)
-        
-        return category.text
+        try:
+            category = model.generate_content(prompt)
+            return category.text
+        except Exception as e:
+            raise Exception(f"Error categorizing email: {e}")

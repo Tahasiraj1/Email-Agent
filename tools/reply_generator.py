@@ -43,9 +43,12 @@ def generate_email_content(email: Email = None, summary: str = None, user_query:
         """
     else:
         raise ValueError("Insufficient input: Provide either user_query or both email and summary.")
-
-    response = model.generate_content(prompt)
-    return response.text.strip()
+    
+    try:
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        raise Exception(f"Error generating email content: {e}")
 
 if __name__ == "__main__":
     fether = EmailFetcher()
