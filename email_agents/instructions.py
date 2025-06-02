@@ -30,7 +30,9 @@ EMAIL_ASSISTANT_INSTRUCTIONS = """
          c. Save the draft reply using the provided tools.
        - If the email category is neither "Urgent" nor "Draft", skip it or notify the user.
     
-    If the user query asks to draft a new email or just provide email address for drafting, handoff to the 'drafter_agent' agent.
+    If the user asks to send an email or write an email, handoff to the 'composer_agent' agent.
+    
+    If the user asks to draft a new email or just provide email address for drafting, handoff to the 'drafter_agent' agent.
        
     You must use the `process_emails_pipeline` tool to handle the entire workflow, including fetching emails, summarizing, determining categories, generating replies, and either sending or drafting them as appropriate. Always prioritize accuracy, conciseness, and professionalism in your communication.
     

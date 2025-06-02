@@ -1,10 +1,11 @@
-from email.mime.text import MIMEText
+from email.message import EmailMessage
 from googleapiclient.discovery import build
 from services.auth import authenticate
 from models.interfaces import Email
 from fetcher import EmailFetcher
 from tools.reply_generator import generate_email_content
 from tools.summarize import summarize_email
+from googleapiclient.errors import HttpError
 import base64
 
 
@@ -12,49 +13,56 @@ class EmailDrafter:
     @authenticate
     def draft_email(self, email_id: str, draft_text: Email, creds=None) -> str:
         """Draft an email."""
-        service = build('gmail', 'v1', credentials=creds)
+        try:
+            service = build('gmail', 'v1', credentials=creds)
 
-        email = service.users().messages().get(
-            userId='me', id=email_id, format='metadata').execute()
-        headers = {h['name']: h['value'] for h in email['payload']['headers']}
+            email = service.users().messages().get(
+                userId='me', id=email_id, format='metadata').execute()
+            headers = {h['name']: h['value'] for h in email['payload']['headers']}
 
-        to = headers.get('From')
-        subject = headers.get('Subject', '(No Subject)')
-        message_id = headers.get('Message-ID')
-        thread_id = email['threadId']
+            to = headers.get('From')
+            subject = headers.get('Subject', '(No Subject)')
+            message_id = headers.get('Message-ID')
 
-        # Step 2: Create MIME reply
-        draft = MIMEText(draft_text)
-        draft['To'] = to
-        draft['Subject'] = f"Re: {subject}"
-        draft['In-Reply-To'] = message_id
-        draft['References'] = message_id
+            # Step 2: Create MIME reply
+            draft = EmailMessage()
+            draft['To'] = to
+            draft['Subject'] = f"Re: {subject}"
+            draft['In-Reply-To'] = message_id
+            draft['References'] = message_id
+            draft.set_content(draft_text)
 
-        # Step 3: Encode and send
-        raw_message = base64.urlsafe_b64encode(draft.as_bytes()).decode()
+            # Step 3: Encode and send
+            raw_message = base64.urlsafe_b64encode(draft.as_bytes()).decode()
 
-        draft_body = {
-            'message': {
-                'raw': raw_message
+            draft_body = {
+                'message': {
+                    'raw': raw_message
+                }
             }
-        }
 
-        draft = service.users().drafts().create(
-            userId='me',
-            body=draft_body
-        ).execute()
+            draft = service.users().drafts().create(
+                userId='me',
+                body=draft_body
+            ).execute()
 
-        return draft
+            return draft
+        except HttpError as e:
+            raise Exception(f"Error: {e}")
 
     @authenticate
     def draft_new_email(self, to: str, subject: str, draft_text: str, creds=None):
-        service = build('gmail', 'v1', credentials=creds)
-        draft = MIMEText(draft_text)
-        draft['To'] = to
-        draft['Subject'] = subject
-        raw_message = base64.urlsafe_b64encode(draft.as_bytes()).decode()
-        draft_body = {'message': {'raw': raw_message}}
-        return service.users().drafts().create(userId='me', body=draft_body).execute()
+        try:
+            service = build('gmail', 'v1', credentials=creds)
+            draft = EmailMessage()
+            draft['To'] = to
+            draft['Subject'] = subject
+            draft.set_content(draft_text)
+            raw_message = base64.urlsafe_b64encode(draft.as_bytes()).decode()
+            draft_body = {'message': {'raw': raw_message}}
+            return service.users().drafts().create(userId='me', body=draft_body).execute()
+        except HttpError as e:
+            raise Exception(f"Error: {e}")
 
 if __name__ == '__main__':
     fetcher = EmailFetcher()

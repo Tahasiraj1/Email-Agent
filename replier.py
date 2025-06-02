@@ -1,5 +1,5 @@
 from googleapiclient.discovery import build
-from email.mime.text import MIMEText
+from email.message import EmailMessage
 from services.auth import authenticate
 import base64
 
@@ -23,11 +23,12 @@ class EmailReplier:
         thread_id = original_msg['threadId']
 
         # Step 2: Create MIME reply
-        reply = MIMEText(reply_text)
+        reply = EmailMessage()
         reply['To'] = to
         reply['Subject'] = f"Re: {subject}"
         reply['In-Reply-To'] = message_id
         reply['References'] = message_id
+        reply.set_content(reply_text)
 
         # Step 3: Encode and send
         raw_message = base64.urlsafe_b64encode(reply.as_bytes()).decode()
