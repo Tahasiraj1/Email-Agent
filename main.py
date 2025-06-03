@@ -2,16 +2,16 @@ from email_agents.email_agent import email_assistant
 from agents import Runner
 import chainlit as cl
 
-async def run_agent(user_input: str):
-    result = await Runner.run(email_assistant, input=user_input)
-    final_output = result.final_output
-    print(final_output)
-    return final_output
-
 @cl.on_message
 async def on_message(message: cl.Message):
+    msg = cl.Message(content="")
+    await msg.send()
     try:
-        result = await run_agent(message.content)
-        await cl.Message(content=result).send()
+        result = Runner.run_streamed(email_assistant, input=message.content)
+        async for event in result.stream_events():
+            if event.type == 'raw_response_event' and hasattr(event.data, 'delta'):
+                token = event.data.delta
+                await msg.stream_token(token)
+        await msg.send()
     except Exception as e:
-        await cl.Message(content=f"Error: {e}").send()
+        await msg.send(f"Error: {e}")
