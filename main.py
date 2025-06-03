@@ -14,4 +14,5 @@ async def on_message(message: cl.Message):
                 await msg.stream_token(token)
         await msg.send()
     except Exception as e:
-        await msg.send(f"Error: {e}")
+        msg = cl.Message(content=f"Error: {e}")
+        await msg.send()

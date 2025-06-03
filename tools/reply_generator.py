@@ -16,6 +16,7 @@ def generate_email_content(email: Email = None, summary: str = None, user_query:
     # Compose the base prompt
     prompt = "You are a professional email assistant writing on behalf of Taha Siraj.\n"
     prompt += "NEVER add comments like 'Here's your reply' or 'Here's the draft'. Just output the email body.\n\n"
+    prompt += "Never include spaces for my manual input or change, like this [Your Name] OR [Your Email] OR [Subject] OR [Body] OR [Attachments] OR [Hiring Manager Name] OR Anything like that.\n\n"
 
     if user_query:
         prompt += f"""📌 User Request:
