@@ -31,7 +31,7 @@ class EmailComposer:
                         attachment_data = fp.read()
                     email.add_attachment(attachment_data, maintype, subtype)
             else:
-                print(f"\n\n\nNo attachments found.\n\n\n")
+                pass
 
 
             # Step 2: Encode and send

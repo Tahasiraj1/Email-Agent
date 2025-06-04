@@ -11,7 +11,7 @@ if not gemini_api_key:
 def generate_email_content(email: Email = None, summary: str = None, user_query: str = None) -> str:
     """Generate an email draft, reply, or fully composed email based on context."""
     genai.configure(api_key=gemini_api_key)
-    model = genai.GenerativeModel("gemini-2.0-flash")
+    model = genai.GenerativeModel("gemini-2.5-flash-preview-05-20")
 
     # Compose the base prompt
     prompt = "You are a professional email assistant writing on behalf of Taha Siraj.\n"
