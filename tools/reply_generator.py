@@ -1,7 +1,7 @@
+from .summarize import summarize_email
 import google.generativeai as genai
 from models.interfaces import Email
 from fetcher import EmailFetcher
-from tools.summarize import summarize_email
 import os
 
 gemini_api_key = os.getenv("GEMINI_API_KEY")

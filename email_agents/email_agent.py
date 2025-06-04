@@ -1,4 +1,4 @@
-from email_agents.instructions import COMPOSER_INSTRUCTIONS, EMAIL_ASSISTANT_INSTRUCTIONS, DRAFTER_INSTRUCTIONS
+from .instructions import COMPOSER_INSTRUCTIONS, EMAIL_ASSISTANT_INSTRUCTIONS, DRAFTER_INSTRUCTIONS
 from agents import Agent, AsyncOpenAI, set_tracing_disabled, OpenAIChatCompletionsModel
 from tools.process_pipeline import process_emails_pipeline
 from tools.compose_pipeline import compose_email_pipeline

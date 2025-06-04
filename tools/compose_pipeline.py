@@ -1,4 +1,4 @@
-from tools.reply_generator import generate_email_content
+from .reply_generator import generate_email_content
 from composer import EmailComposer
 from agents import function_tool
 from typing import List, Optional

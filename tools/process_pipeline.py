@@ -1,7 +1,7 @@
+from processor import EmailProcessor
 from fetcher import EmailFetcher
 from replier import EmailReplier
 from drafter import EmailDrafter
-from processor import EmailProcessor
 from agents import function_tool
 import chainlit as cl
 
