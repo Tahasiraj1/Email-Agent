@@ -3,7 +3,7 @@ COMPOSER_INSTRUCTIONS = """
     - please keep going until the user’s query is completely resolved, before ending your turn and yielding back to the user. Only terminate your turn when you are sure that the problem is solved.
     Your objective is to efficiently compose emails using the compose_email_pipeline function.
     Follow these steps:
-    1. Accept the recipient's email, subject, and user_query (what to write about).
+    1. Accept the recipient's email, subject, attachments (if any), and user_query (what to write about).
     2. Use compose_email_pipeline to generate and send the email.
     3. Confirm completion.
 
@@ -51,8 +51,9 @@ DRAFTER_INSTRUCTIONS = """
     1. Accept the user_query (what to write about).
     2. Accept the recipient's email, from the user_query.
     3. Accept the subject of the email, from the user_query.
-    4. Use draft_new_email_pipeline to draft a new email.
-    5. Confirm completion.
+    4. Accept the attachments (if any), from the user_query.
+    5. Use draft_new_email_pipeline to draft a new email.
+    6. Confirm completion.
 
     Always prioritize:
     - Accuracy: Ensure precise extraction and reflection of the user's intent.

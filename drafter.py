@@ -1,11 +1,12 @@
-from email.message import EmailMessage
+from tools.reply_generator import generate_email_content
+from googleapiclient.errors import HttpError
+from tools.summarize import summarize_email
 from googleapiclient.discovery import build
 from services.auth import authenticate
+from email.message import EmailMessage
 from models.interfaces import Email
 from fetcher import EmailFetcher
-from tools.reply_generator import generate_email_content
-from tools.summarize import summarize_email
-from googleapiclient.errors import HttpError
+import mimetypes
 import base64
 
 
@@ -51,13 +52,27 @@ class EmailDrafter:
             raise Exception(f"Error Drafting: {e}")
 
     @authenticate
-    def draft_new_email(self, to: str, subject: str, draft_text: str, creds=None):
+    def draft_new_email(self, to: str, subject: str, draft_text: str, creds=None, attachments: list = None):
         try:
             service = build('gmail', 'v1', credentials=creds)
             draft = EmailMessage()
             draft['To'] = to
             draft['Subject'] = subject
             draft.set_content(draft_text)
+            
+            # attachment
+            if attachments:
+                for attachment in attachments:
+                    # guessing the MIME type
+                    type_subtype, _ = mimetypes.guess_type(attachment)
+                    maintype, subtype = type_subtype.split("/")
+
+                    with open(attachment, "rb") as fp:
+                        attachment_data = fp.read()
+                    draft.add_attachment(attachment_data, maintype, subtype)
+            else:
+                pass
+
             raw_message = base64.urlsafe_b64encode(draft.as_bytes()).decode()
             draft_body = {'message': {'raw': raw_message}}
             return service.users().drafts().create(userId='me', body=draft_body).execute()
