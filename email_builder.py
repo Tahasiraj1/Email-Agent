@@ -40,7 +40,6 @@ class ReplyDraftEmailBuilder:
             raise Exception(f"Error Structure Reply: {e}")
 
 
-
 @dataclass
 class NewEmailBuilder:
     to: str

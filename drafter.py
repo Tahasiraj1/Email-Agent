@@ -2,7 +2,6 @@ from email_builder import ReplyDraftEmailBuilder
 from googleapiclient.errors import HttpError
 import base64
 
-
 class EmailDrafter:
     def draft_email(self, email_id: str, reply_text: str) -> str:
         """Draft an email."""

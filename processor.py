@@ -1,7 +1,6 @@
 from tools.summarize import summarize_email
 from tools.reply_generator import generate_email_content
 
-
 class EmailProcessor:
     def __init__(self, fetcher, replier, drafter, send_message=None):
         self.fetcher = fetcher

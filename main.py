@@ -27,7 +27,6 @@ async def on_message(message: cl.Message):
 
     await run_agent(input_str)
 
-
 @cl.on_chat_start
 async def start_background_email_agent():
     async def periodic_runner():

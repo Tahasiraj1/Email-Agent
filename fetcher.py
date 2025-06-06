@@ -6,7 +6,6 @@ from categorizer import EmailCategorizer
 from typing import List
 import base64
 
-
 class EmailFetcher:
     def __init__(self, max_results=1):
         self.max_results = max_results
@@ -103,10 +102,3 @@ class EmailFetcher:
 
     def fetch_emails(self) -> List[Email]:
         return self._list_latest_emails()
-
-
-if __name__ == '__main__':
-    fetcher = EmailFetcher()
-    emails = fetcher.fetch_emails()
-    for email in emails:
-        print(email)
