@@ -1,37 +1,14 @@
-from tools.reply_generator import generate_email_content
+from email_builder import ReplyDraftEmailBuilder
 from googleapiclient.errors import HttpError
-from tools.summarize import summarize_email
-from googleapiclient.discovery import build
-from services.auth import authenticate
-from email.message import EmailMessage
-from models.interfaces import Email
-from fetcher import EmailFetcher
-import mimetypes
 import base64
 
 
 class EmailDrafter:
-    @authenticate
-    def draft_email(self, email_id: str, draft_text: Email, creds=None) -> str:
+    def draft_email(self, email_id: str, reply_text: str) -> str:
         """Draft an email."""
         try:
-            service = build('gmail', 'v1', credentials=creds)
-
-            email = service.users().messages().get(
-                userId='me', id=email_id, format='metadata').execute()
-            headers = {h['name']: h['value'] for h in email['payload']['headers']}
-
-            to = headers.get('From')
-            subject = headers.get('Subject', '(No Subject)')
-            message_id = headers.get('Message-ID')
-
-            # Step 2: Create MIME reply
-            draft = EmailMessage()
-            draft['To'] = to
-            draft['Subject'] = f"Re: {subject}"
-            draft['In-Reply-To'] = message_id
-            draft['References'] = message_id
-            draft.set_content(draft_text)
+            builder = ReplyDraftEmailBuilder(email_id=email_id, reply_text=reply_text)
+            draft, service, _ = builder.structure()
 
             # Step 3: Encode and send
             raw_message = base64.urlsafe_b64encode(draft.as_bytes()).decode()
@@ -50,50 +27,3 @@ class EmailDrafter:
             return draft
         except HttpError as e:
             raise Exception(f"Error Drafting: {e}")
-
-    @authenticate
-    def draft_new_email(self, to: str, subject: str, draft_text: str, creds=None, attachments: list = None):
-        try:
-            service = build('gmail', 'v1', credentials=creds)
-            draft = EmailMessage()
-            draft['To'] = to
-            draft['Subject'] = subject
-            draft.set_content(draft_text)
-            
-            # attachment
-            if attachments:
-                for attachment in attachments:
-                    # guessing the MIME type
-                    type_subtype, _ = mimetypes.guess_type(attachment)
-                    maintype, subtype = type_subtype.split("/")
-
-                    with open(attachment, "rb") as fp:
-                        attachment_data = fp.read()
-                    draft.add_attachment(attachment_data, maintype, subtype)
-            else:
-                pass
-
-            raw_message = base64.urlsafe_b64encode(draft.as_bytes()).decode()
-            draft_body = {'message': {'raw': raw_message}}
-            return service.users().drafts().create(userId='me', body=draft_body).execute()
-        except HttpError as e:
-            raise Exception(f"Error Drafting New Email: {e}")
-
-if __name__ == '__main__':
-    fetcher = EmailFetcher()
-    emails = fetcher.fetch_emails()
-
-    for email in emails:
-        print(email)
-
-        summary = summarize_email(email)
-
-        reply = generate_email_content(email=email, summary=summary)
-        print("\nReply: ", reply)
-
-        drafter = EmailDrafter()
-        draft = drafter.draft_email(email["email_id"], reply)
-        print("\nDraft: ", draft)
-
-        new_draft = drafter.draft_new_email(to='tahasiraj200@gmail.com', draft_text=reply, subject=email["subject"])
-        print("\nNew Draft: ", new_draft)

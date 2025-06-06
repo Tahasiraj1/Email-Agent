@@ -1,7 +1,7 @@
 from .reply_generator import generate_email_content
 from typing import List, Optional
 from agents import function_tool
-from drafter import EmailDrafter
+from composer import NewEmailManager
 import chainlit as cl
 
 @function_tool
@@ -15,7 +15,6 @@ async def draft_new_email_pipeline(to: str, subject: str, user_query: str, attac
         attachments (list): A list of file paths to attach to the email. (Default: None)
     """
     reply = generate_email_content(user_query=user_query)
-    drafter = EmailDrafter()
-    new_draft = drafter.draft_new_email(to=to, draft_text=reply, subject=subject, attachments=attachments)
+    drafter = NewEmailManager(to=to, subject=subject, body=reply, attachments=attachments)
+    new_draft = drafter.draft()
     await cl.Message(content=f"📧 New draft created to {to} with subject '{subject}':\n{reply}\n{new_draft}").send()
-

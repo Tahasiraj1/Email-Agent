@@ -1,40 +1,28 @@
-from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from services.auth import authenticate
-from email.message import EmailMessage
-import mimetypes
+from email_builder import NewEmailBuilder
+from dataclasses import dataclass
 import base64
 
-class EmailComposer:
-    @authenticate
-    def compose_email(self, to: str, subject: str, body: str, creds=None, attachments: list = None) -> str:
+@dataclass
+class NewEmailManager:
+    to: str
+    subject: str
+    body: str
+    attachments: list = None
+
+    def __post_init__(self):
+        self.builder = NewEmailBuilder(
+            to=self.to, 
+            subject=self.subject, 
+            reply_text=self.body, 
+            attachments=self.attachments
+        )
+
+    def compose_email(self) -> str:
         """Compose an email."""
         try:
-            service = build('gmail', 'v1', credentials=creds)
-            profile = service.users().getProfile(userId='me').execute()
-
-            # Step 1: Create MIME reply
-            email = EmailMessage()
-            email['To'] = to
-            email['from'] = profile['emailAddress']
-            email['Subject'] = subject
-            email.set_content(body)
-
-            # attachment
-            if attachments:
-                for attachment in attachments:
-                    # guessing the MIME type
-                    type_subtype, _ = mimetypes.guess_type(attachment)
-                    maintype, subtype = type_subtype.split("/")
-
-                    with open(attachment, "rb") as fp:
-                        attachment_data = fp.read()
-                    email.add_attachment(attachment_data, maintype, subtype)
-            else:
-                pass
-
-
-            # Step 2: Encode and send
+            email, service = self.builder.structure()
+            
             raw_message = base64.urlsafe_b64encode(email.as_bytes()).decode()
 
             sent_msg = service.users().messages().send(
@@ -47,3 +35,14 @@ class EmailComposer:
             return sent_msg
         except HttpError as e:
             raise Exception(f"Error sending email: {e}")
+        
+
+    def draft(self):
+        try:
+            email, service = self.builder.structure()
+
+            raw_message = base64.urlsafe_b64encode(email.as_bytes()).decode()
+            draft_body = {'message': {'raw': raw_message}}
+            return service.users().drafts().create(userId='me', body=draft_body).execute()
+        except HttpError as e:
+            raise Exception(f"Error Drafting New Email: {e}")
