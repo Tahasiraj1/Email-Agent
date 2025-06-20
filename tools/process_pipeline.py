@@ -1,7 +1,7 @@
-from processor import EmailProcessor
-from fetcher import EmailFetcher
-from replier import EmailReplier
-from drafter import EmailDrafter
+from email_modules.processor import EmailProcessor
+from email_modules.fetcher import EmailFetcher
+from email_modules.replier import EmailReplier
+from email_modules.drafter import EmailDrafter
 from agents import function_tool
 import chainlit as cl
 

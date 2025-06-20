@@ -1,5 +1,5 @@
 from .reply_generator import generate_email_content
-from composer import NewEmailManager
+from email_modules.composer import NewEmailManager
 from agents import function_tool
 from typing import List, Optional
 import chainlit as cl

@@ -1,4 +1,4 @@
-from email_builder import ReplyDraftEmailBuilder
+from .email_builder import ReplyDraftEmailBuilder
 from googleapiclient.errors import HttpError
 import base64
 

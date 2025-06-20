@@ -2,7 +2,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from services.auth import authenticate
 from models.interfaces import Email
-from categorizer import EmailCategorizer
+from .categorizer import EmailCategorizer
 from typing import List
 import base64
 

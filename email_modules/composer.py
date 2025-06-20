@@ -1,5 +1,5 @@
 from googleapiclient.errors import HttpError
-from email_builder import NewEmailBuilder
+from .email_builder import NewEmailBuilder
 from dataclasses import dataclass
 import base64
 
