@@ -3,16 +3,19 @@ from email_modules.fetcher import EmailFetcher
 from email_modules.replier import EmailReplier
 from email_modules.drafter import EmailDrafter
 from agents import function_tool
-import chainlit as cl
+from utils.message_collector import MessageCollector
 
 @function_tool
 async def process_emails_pipeline():
-    fetcher = EmailFetcher()
-    replier = EmailReplier()
-    drafter = EmailDrafter()
+    try:
+        fetcher = EmailFetcher()
+        replier = EmailReplier()
+        drafter = EmailDrafter()
+        collector = MessageCollector()
 
-    async def send_message_to_chat(message: str):
-        await cl.Message(content=message).send()
-
-    processor = EmailProcessor(fetcher, replier, drafter, send_message=send_message_to_chat)
-    await processor.process_emails()
+        processor = EmailProcessor(fetcher, replier, drafter, collector)
+        await processor.process_emails()
+        
+        return "\n".join(collector.get_messages())
+    except Exception as e:
+        raise Exception(f"Error processing emails: {e}")
