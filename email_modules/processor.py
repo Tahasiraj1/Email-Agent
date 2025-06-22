@@ -9,43 +9,47 @@ class EmailProcessor:
         self.collector = collector
         self.emails = []
 
+    async def log(self, message: str):
+        await self.collector.collect(message)
+        print(message)
+
     async def process_emails(self):
         try:
             self.emails = self.fetcher.fetch_emails()
 
             if not self.emails:
-                self.collector.collect("✅ No unread emails found.")
+                await self.log("✅ No unread emails found.")
                 return
 
             for email in self.emails:
                 try:
-                    self.collector.collect(f"📧 Processing email: {email['subject']} (Category: {email['category']})")
+                    await self.log(f"📧 Processing email: {email['subject']} (Category: {email['category']})")
 
                     if 'Urgent'.lower() in email['category'].lower():
                         summary = summarize_email(email)
                         reply = generate_email_content(email=email, summary=summary)
                         self.drafter.draft_email(email["email_id"], reply)
-                        self.collector.collect(f"✅ Replied to email ID: {email['email_id']} with reply: {reply}")
+                        await self.log(f"✅ Replied to email ID: {email['email_id']} with reply: {reply}")
 
                     elif 'Draft'.lower() in email['category'].lower():
                         summary = summarize_email(email)
                         reply = generate_email_content(email=email, summary=summary)
                         self.drafter.draft_email(email["email_id"], reply)
-                        self.collector.collect(f"✅ Drafted email ID: {email['email_id']} with reply: {reply}")
+                        await self.log(f"✅ Drafted email ID: {email['email_id']} with reply: {reply}")
 
                     elif 'Important'.lower() in email['category'].lower():
                         summary = summarize_email(email)
                         reply = generate_email_content(email=email, summary=summary)
                         self.drafter.draft_email(email["email_id"], reply)
-                        self.collector.collect(f"✅ Drafted email ID: {email['email_id']} with reply: {reply}")
+                        await self.log(f"✅ Drafted email ID: {email['email_id']} with reply: {reply}")
 
                     else:
-                        self.collector.collect(f"❌ Skipping email ID: {email['email_id']} with category: {email['category']}")
+                        await self.log(f"❌ Skipping email ID: {email['email_id']} with category: {email['category']}")
                         
                 except Exception as e:
-                    self.collector.collect(f"❌ Failed to process email ID {email['email_id']}: {e}")
+                    await self.log(f"❌ Failed to process email ID {email['email_id']}: {e}")
 
             else:
-                self.collector.collect("✅ Finished processing all emails.")
+                await self.log("✅ Finished processing all emails.")
         except Exception as e:
-            self.collector.collect(f"❌ Critical Error during processing: {e}")
+            await self.log(f"❌ Critical Error during processing: {e}")

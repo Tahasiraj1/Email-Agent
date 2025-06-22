@@ -2,7 +2,7 @@ from .reply_generator import generate_email_content
 from typing import List, Optional
 from agents import function_tool
 from email_modules.composer import NewEmailManager
-from utils.message_collector import MessageCollector
+from utils.redis_collector import RedisCollector
 
 @function_tool
 async def draft_new_email_pipeline(to: str, subject: str, user_query: str, attachments: Optional[List[str]] = None):
@@ -18,7 +18,7 @@ async def draft_new_email_pipeline(to: str, subject: str, user_query: str, attac
         reply = generate_email_content(user_query=user_query)
         drafter = NewEmailManager(to=to, subject=subject, body=reply, attachments=attachments)
         new_draft = drafter.draft()
-        collector = MessageCollector()
-        collector.collect(f"📧 New draft created to {to} with subject '{subject}':\n{reply}\n{new_draft}")
+        collector = RedisCollector()
+        await collector.collect(f"📧 New draft created to {to} with subject '{subject}':\n{reply}\n{new_draft}")
     except Exception as e:
         raise Exception(f"Error drafting email: {e}")
