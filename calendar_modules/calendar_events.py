@@ -26,6 +26,7 @@ def get_calendar_events(creds=None):
         for event in events:
             start = event['start'].get('dateTime', event['start'].get('date'))
             print(start, event['summary'])
+        return events
     except HttpError as e:
         raise Exception(f"Error fetching calendar events: {str(e)}")
 
