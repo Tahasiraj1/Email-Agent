@@ -3,7 +3,6 @@ from agents import Agent, AsyncOpenAI, set_tracing_disabled, OpenAIChatCompletio
 from tools.process_pipeline import process_emails_pipeline
 from tools.compose_pipeline import compose_email_pipeline
 from tools.draft_pipeline import draft_new_email_pipeline
-from tools.draft_pipeline import draft_new_email_pipeline
 import os
 
 set_tracing_disabled(disabled=True)
@@ -25,6 +24,7 @@ drafter_agent = Agent(
     instructions=DRAFTER_INSTRUCTIONS,
     model=model,
     tools=[draft_new_email_pipeline],
+    tool_choice='draft_new_email_pipeline',
 )
 
 composer_agent = Agent(
@@ -32,6 +32,7 @@ composer_agent = Agent(
     instructions=COMPOSER_INSTRUCTIONS,
     model=model,
     tools=[compose_email_pipeline],
+    tool_choice='compose_email_pipeline',
 )
 
 email_assistant = Agent(
