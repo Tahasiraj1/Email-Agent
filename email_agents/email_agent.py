@@ -1,23 +1,11 @@
 from .instructions import COMPOSER_INSTRUCTIONS, EMAIL_ASSISTANT_INSTRUCTIONS, DRAFTER_INSTRUCTIONS
-from agents import Agent, AsyncOpenAI, set_tracing_disabled, OpenAIChatCompletionsModel
 from tools.process_pipeline import process_emails_pipeline
 from tools.compose_pipeline import compose_email_pipeline
 from tools.draft_pipeline import draft_new_email_pipeline
-import os
+from utils.gemini_model import get_gemini_model
+from agents import Agent
 
-set_tracing_disabled(disabled=True)
-
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-
-provider = AsyncOpenAI(
-    api_key=gemini_api_key,
-    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-)
-
-model = OpenAIChatCompletionsModel(
-    model='gemini-2.5-flash-preview-05-20',
-    openai_client=provider,
-)
+model = get_gemini_model()
 
 drafter_agent = Agent(
     name="Drafter Agent",
