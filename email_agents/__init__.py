@@ -1,1 +1,1 @@
-from .email_agent import email_assistant
+from .email_agents import email_assistant

@@ -1,4 +1,4 @@
-from email_agents.email_agent import email_assistant
+from email_agents import email_assistant
 from agents import Runner
 import chainlit as cl
 import asyncio
