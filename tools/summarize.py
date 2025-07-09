@@ -1,5 +1,5 @@
 import google.generativeai as genai
-from models.interfaces import Email
+from models import Email
 import os
 
 gemini_api_key = os.getenv("GEMINI_API_KEY")

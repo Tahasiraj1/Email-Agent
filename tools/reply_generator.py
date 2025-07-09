@@ -1,6 +1,6 @@
 from .summarize import summarize_email
 import google.generativeai as genai
-from models.interfaces import Email
+from models import Email
 from email_modules.fetcher import EmailFetcher
 import os
 

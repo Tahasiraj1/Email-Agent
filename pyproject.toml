@@ -13,6 +13,7 @@ dependencies = [
     "google-auth-httplib2>=0.2.0",
     "google-auth-oauthlib>=1.2.2",
     "google-generativeai>=0.8.5",
+    "ics>=0.7.2",
     "openai-agents>=0.0.15",
     "redis>=4.5.0",
 ]

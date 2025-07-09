@@ -175,6 +175,19 @@ wheels = [
 ]
 
 [[package]]
+name = "arrow"
+version = "1.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dateutil" },
+    { name = "types-python-dateutil" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2e/00/0f6e8fcdb23ea632c866620cc872729ff43ed91d284c866b515c6342b173/arrow-1.3.0.tar.gz", hash = "sha256:d4540617648cb5f895730f1ad8c82a65f2dad0166f57b75f3ca54759c4d67a85", size = 131960 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f8/ed/e97229a566617f2ae958a6b13e7cc0f585470eac730a73e9e82c32a3cdd2/arrow-1.3.0-py3-none-any.whl", hash = "sha256:c728b120ebc00eb84e01882a6f5e7927a53960aa990ce7dd2b10f39005a67f80", size = 66419 },
+]
+
+[[package]]
 name = "async-timeout"
 version = "5.0.1"
 source = { registry = "https://pypi.org/simple" }
@@ -434,6 +447,7 @@ dependencies = [
     { name = "google-auth-httplib2" },
     { name = "google-auth-oauthlib" },
     { name = "google-generativeai" },
+    { name = "ics" },
     { name = "openai-agents" },
     { name = "redis" },
 ]
@@ -448,6 +462,7 @@ requires-dist = [
     { name = "google-auth-httplib2", specifier = ">=0.2.0" },
     { name = "google-auth-oauthlib", specifier = ">=1.2.2" },
     { name = "google-generativeai", specifier = ">=0.8.5" },
+    { name = "ics", specifier = ">=0.7.2" },
     { name = "openai-agents", specifier = ">=0.0.15" },
     { name = "redis", specifier = ">=4.5.0" },
 ]
@@ -964,6 +979,22 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f4/ca/8ee27c56ab650d9d3ea095f0ba12ceb202bc8ba7362429dc76c25438df2f/huggingface_hub-0.32.0.tar.gz", hash = "sha256:dd66c9365ea43049ec9b939bdcdb21a0051e1bd70026fc50304e4fb1bb6a15ba", size = 422255 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/3a/60/90aae898b0a9f3cd65f50718c33b1f1dbfb1527d10db754e99e14e2b0a1d/huggingface_hub-0.32.0-py3-none-any.whl", hash = "sha256:e56e94109649ce6ebdb59b4e393ee3543ec0eca2eab4f41b269e1d885c88d08c", size = 509297 },
+]
+
+[[package]]
+name = "ics"
+version = "0.7.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "arrow" },
+    { name = "attrs" },
+    { name = "python-dateutil" },
+    { name = "six" },
+    { name = "tatsu" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/43/fa/2cb7cbe23566140f011da4fec280d4873da4389c8b838bb3e5ce3fc39b16/ics-0.7.2.tar.gz", hash = "sha256:6743539bca10391635249b87d74fcd1094af20b82098bebf7c7521df91209f05", size = 190643 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0a/95/e04dea5cf29bdf5005f5aa7ccf0a2f9724b877722d89f8286dc3785a7cdc/ics-0.7.2-py2.py3-none-any.whl", hash = "sha256:5fcf4d29ec6e7dfcb84120abd617bbba632eb77b097722b7df70e48dbcf26103", size = 40086 },
 ]
 
 [[package]]
@@ -2645,6 +2676,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/8d/dd/d4dd75843692690d81f0a4b929212a1614b25d4896aa7c72f4c3546c7e3d/syncer-2.0.3.tar.gz", hash = "sha256:4340eb54b54368724a78c5c0763824470201804fe9180129daf3635cb500550f", size = 11512 }
 
 [[package]]
+name = "tatsu"
+version = "5.13.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e4/f8/20ede366a64e682ce734573e4ed81e16ff7d6dd23eb809c64b7a9659c124/tatsu-5.13.1.tar.gz", hash = "sha256:df8c216eecd09af9b5b308624f1bfda1e4b5af3d3df1bdc4f331a1e8ea6bc012", size = 131775 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f5/68/12d01401a484cc8466b48c9cc4f56b1b3207b683af3b9d740481f1b2bf9b/TatSu-5.13.1-py3-none-any.whl", hash = "sha256:941e12df8798f444957600346c52a5ff3455f485de5b4570a3a71a00ed896a14", size = 80195 },
+]
+
+[[package]]
 name = "tenacity"
 version = "9.1.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2833,6 +2873,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c5/8c/7d682431efca5fd290017663ea4588bf6f2c6aad085c7f108c5dbc316e70/typer-0.16.0.tar.gz", hash = "sha256:af377ffaee1dbe37ae9440cb4e8f11686ea5ce4e9bae01b84ae7c63b87f1dd3b", size = 102625 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/76/42/3efaf858001d2c2913de7f354563e3a3a2f0decae3efe98427125a8f441e/typer-0.16.0-py3-none-any.whl", hash = "sha256:1f79bed11d4d02d4310e3c1b7ba594183bcedb0ac73b27a9e5f28f6fb5b98855", size = 46317 },
+]
+
+[[package]]
+name = "types-python-dateutil"
+version = "2.9.0.20250516"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ef/88/d65ed807393285204ab6e2801e5d11fbbea811adcaa979a2ed3b67a5ef41/types_python_dateutil-2.9.0.20250516.tar.gz", hash = "sha256:13e80d6c9c47df23ad773d54b2826bd52dbbb41be87c3f339381c1700ad21ee5", size = 13943 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c5/3f/b0e8db149896005adc938a1e7f371d6d7e9eca4053a29b108978ed15e0c2/types_python_dateutil-2.9.0.20250516-py3-none-any.whl", hash = "sha256:2b2b3f57f9c6a61fba26a9c0ffb9ea5681c9b83e69cd897c6b5f668d9c0cab93", size = 14356 },
 ]
 
 [[package]]
